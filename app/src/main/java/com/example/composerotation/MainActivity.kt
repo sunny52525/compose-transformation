@@ -3,9 +3,11 @@ package com.example.composerotation
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.composerotation.ui.theme.Blue
 import com.example.composerotation.ui.theme.ComposeRotationTheme
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import java.util.*
 
 class MainActivity : ComponentActivity() {
@@ -30,12 +33,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             ComposeRotationTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    HomeScreen()
-                }
+                HomeScreen()
             }
         }
     }
@@ -52,7 +50,9 @@ data class Transformations(
     val yOffset: Float = 1f
 )
 
+
 @Composable
+@Preview
 fun HomeScreen() {
     var selected: TYPE by remember {
         mutableStateOf(TYPE.BLUE)
@@ -69,6 +69,14 @@ fun HomeScreen() {
         else
             blackTransformation
     }
+
+    val systemUiController = rememberSystemUiController()
+    val statusBarColor =
+        animateColorAsState(
+            targetValue = if (selected == TYPE.BLUE) Blue else Color.Black,
+            animationSpec = tween(1000)
+        )
+    systemUiController.setStatusBarColor(statusBarColor.value, false)
 
     Column(
         Modifier
@@ -95,7 +103,7 @@ fun HomeScreen() {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(RoundedCornerShape(10.dp))
+                .clip(RoundedCornerShape(16.dp))
                 .background(Color.LightGray)
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -157,7 +165,7 @@ fun HomeScreen() {
             RotationSlider(
                 title = "X offset",
                 value = sliderValues.xOffset,
-                range = -200f..200f,
+                range = -2000f..2000f,
                 onChange = {
                     if (selected == TYPE.BLUE) {
                         blueTransformation = blueTransformation.copy(xOffset = it)
@@ -169,7 +177,7 @@ fun HomeScreen() {
             RotationSlider(
                 title = "Y offset",
                 value = sliderValues.yOffset,
-                range = -200f..200f,
+                range = -2000f..2000f,
                 onChange = {
                     if (selected == TYPE.BLUE) {
                         blueTransformation = blueTransformation.copy(yOffset = it)
@@ -191,16 +199,43 @@ fun Rotation(
     transformation: Transformations,
     selectAndReset: () -> Unit
 ) {
-    val xAxisRotationBlue = animateFloatAsState(targetValue = transformation.xAxisRotation)
-    val yAxisRotationBlue = animateFloatAsState(targetValue = transformation.yAxisRotation)
-    val zAxisRotationBlue = animateFloatAsState(targetValue = transformation.zAxisRotation)
-    val xScaleBlue = animateFloatAsState(targetValue = transformation.xScale)
-    val yScaleBlue = animateFloatAsState(targetValue = transformation.yScale)
-    val xOffsetBlue = animateFloatAsState(targetValue = transformation.xOffset)
-    val yOffsetBlue = animateFloatAsState(targetValue = transformation.yOffset)
+    val xAxisRotationBlue = animateFloatAsState(
+        targetValue = transformation.xAxisRotation,
+        animationSpec = if (transformation.xAxisRotation == 0f) tween(500) else spring()
+    )
+    val yAxisRotationBlue =
+        animateFloatAsState(
+            targetValue = transformation.yAxisRotation,
+            animationSpec = if (transformation.yAxisRotation == 0f) tween(500) else spring()
+        )
+    val zAxisRotationBlue =
+        animateFloatAsState(
+            targetValue = transformation.zAxisRotation,
+            animationSpec = if (transformation.zAxisRotation == 0f) tween(500) else spring()
+        )
+    val xScaleBlue =
+        animateFloatAsState(
+            targetValue = transformation.xScale,
+            animationSpec = if (transformation.xScale == 0f) tween(500) else spring()
+        )
+    val yScaleBlue =
+        animateFloatAsState(
+            targetValue = transformation.yScale,
+            animationSpec = if (transformation.yScale == 0f) tween(500) else spring()
+        )
+    val xOffsetBlue =
+        animateFloatAsState(
+            targetValue = transformation.xOffset,
+            animationSpec = if (transformation.xOffset == 0f) tween(500) else spring()
+        )
+    val yOffsetBlue =
+        animateFloatAsState(
+            targetValue = transformation.yOffset,
+            animationSpec = if (transformation.yOffset == 0f) tween(500) else spring()
+        )
     Card(
         backgroundColor = color,
-        shape = RoundedCornerShape(10.dp),
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .size(150.dp)
             .scale(
